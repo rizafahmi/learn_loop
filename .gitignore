@@ -39,3 +39,7 @@ npm-debug.log
 *.db
 *.db-*
 
+# Local environment/cache files
+.DS_Store
+/.direnv/
+/.nix-mix/
