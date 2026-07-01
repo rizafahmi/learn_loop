@@ -14,9 +14,18 @@ Then a User account is created for me
 And I have Learner access
 And I am taken to the Learner Dashboard
 
-### Scenario: Public sign-up does not create an Admin
+### Scenario: First public sign-up creates an Admin
+
+Given no User accounts exist
+When I sign up with valid account details
+Then a User account is created for me
+And I have Learner access
+And I have Admin access
+
+### Scenario: Later public sign-up does not create an Admin
 
 Given I am a visitor
+And another User account already exists
 When I sign up with valid account details
 Then I do not have Admin access
 And I cannot access Admin screens
@@ -140,7 +149,7 @@ And I see a Review Course action
 Given I am a signed-in Learner
 And there is a Draft Course
 When I try to view the Course Overview
-Then I am told the Course is unavailable
+Then I am redirected with a flash telling me the Course is unavailable
 And I cannot view the Course outline
 
 ### Scenario: Learner without Enrollment cannot view an Archived Course Overview
@@ -149,7 +158,7 @@ Given I am a signed-in Learner
 And there is an Archived Course
 And I do not have an Enrollment in that Course
 When I try to view the Course Overview
-Then I am told the Course is unavailable
+Then I am redirected with a flash telling me the Course is unavailable
 And I cannot view the Course outline
 
 ### Scenario: Enrolled Learner can view an Archived Course Overview
@@ -189,7 +198,7 @@ Given I am a signed-in Learner
 And there is a Draft Course
 When I try to start the Draft Course
 Then no Enrollment is created
-And I am told the Course is unavailable
+And I am redirected with a flash telling me the Course is unavailable
 
 ### Scenario: Learner cannot newly start an Archived Course
 
@@ -198,7 +207,7 @@ And there is an Archived Course
 And I do not have an Enrollment in that Course
 When I try to start the Archived Course
 Then no Enrollment is created
-And I am told the Course is unavailable
+And I am redirected with a flash telling me the Course is unavailable
 
 ## Feature: Resuming a Course
 
@@ -333,7 +342,7 @@ And I do not have an Enrollment in that Course
 When I try to mark a Lesson in that Course complete for the other Learner
 Then the Lesson is not recorded as complete for me
 And the Lesson is not recorded as complete for the other Learner
-And I am denied access
+And I am redirected with a flash telling me access is denied
 
 ### Scenario: Lesson Markdown is rendered safely for enrolled Learners
 
@@ -405,7 +414,7 @@ Then I can access Admin screens
 
 Given I am a signed-in User without Admin access
 When I visit the Admin area
-Then I am denied access
+Then I am redirected with a flash telling me access is denied
 
 ### Scenario: User can be both Admin and Learner
 
@@ -413,6 +422,14 @@ Given I am a signed-in User with Admin access and Learner access
 When I use the app
 Then I can access Admin screens
 And I can access Learner screens
+
+### Scenario: Admin assigns Admin access to another User
+
+Given I am a signed-in User with Admin access
+And another User exists without Admin access
+When I assign Admin access to that User from the User page
+Then that User has Admin access
+And that User can access Admin screens
 
 ## Feature: Admin Course management
 
@@ -447,12 +464,12 @@ And there is a Course
 When I update the Course title or short description
 Then the Course shows the updated details
 
-### Scenario: Admin manually orders Courses
+### Scenario: Courses are ordered by creation time
 
 Given I am a signed-in Admin
-And Course A appears before Course B in Course Order
-When I move Course B before Course A
-Then Course B appears before Course A in Learner-facing Course lists
+And Course A was created before Course B
+When I view Learner-facing Course lists
+Then Course A appears before Course B
 
 ### Scenario: Admin cannot publish structurally invalid Course
 
@@ -515,13 +532,13 @@ And there is a Chapter
 When I update the Chapter title
 Then the Chapter shows the updated title
 
-### Scenario: Admin manually orders Chapters within a Course
+### Scenario: Chapters are ordered by creation time within a Course
 
 Given I am a signed-in Admin
-And Chapter A appears before Chapter B in a Course
-When I move Chapter B before Chapter A
-Then Chapter B appears before Chapter A in the Course outline
-And Resume Point calculations use the new Chapter order
+And Chapter A was created before Chapter B in a Course
+When I view the Course outline
+Then Chapter A appears before Chapter B
+And Resume Point calculations use that Chapter order
 
 ## Feature: Admin Lesson management
 
@@ -551,13 +568,13 @@ When I update the Lesson title or rich text body
 Then the Lesson shows the updated content
 And enrolled Learners see the updated content immediately
 
-### Scenario: Admin manually orders Lessons within a Chapter
+### Scenario: Lessons are ordered by creation time within a Chapter
 
 Given I am a signed-in Admin
-And Lesson A appears before Lesson B in a Chapter
-When I move Lesson B before Lesson A
-Then Lesson B appears before Lesson A in the Chapter outline
-And previous, next, and Resume Point calculations use the new Lesson order
+And Lesson A was created before Lesson B in a Chapter
+When I view the Chapter outline
+Then Lesson A appears before Lesson B
+And previous, next, and Resume Point calculations use that Lesson order
 
 ## Feature: Draft deletion and published content preservation
 
@@ -598,7 +615,7 @@ Given I am a signed-in Admin
 And there is a Chapter in a Published Course
 When I try to delete the Chapter
 Then the Chapter is not deleted
-And I am told Published Course content cannot be deleted
+And I am redirected with a flash telling me Published Course content cannot be deleted
 
 ### Scenario: Admin cannot delete a Lesson from a Published Course
 
@@ -606,7 +623,7 @@ Given I am a signed-in Admin
 And there is a Lesson in a Published Course
 When I try to delete the Lesson
 Then the Lesson is not deleted
-And I am told Published Course content cannot be deleted
+And I am redirected with a flash telling me Published Course content cannot be deleted
 
 ### Scenario: Admin cannot delete a Chapter from an Archived Course
 
@@ -614,7 +631,7 @@ Given I am a signed-in Admin
 And there is a Chapter in an Archived Course
 When I try to delete the Chapter
 Then the Chapter is not deleted
-And I am told Archived Course content cannot be deleted
+And I am redirected with a flash telling me Archived Course content cannot be deleted
 
 ### Scenario: Admin cannot delete a Lesson from an Archived Course
 
@@ -622,7 +639,7 @@ Given I am a signed-in Admin
 And there is a Lesson in an Archived Course
 When I try to delete the Lesson
 Then the Lesson is not deleted
-And I am told Archived Course content cannot be deleted
+And I am redirected with a flash telling me Archived Course content cannot be deleted
 
 ### Scenario: Published content is edited in place without versioning
 

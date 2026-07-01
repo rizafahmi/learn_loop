@@ -10,7 +10,7 @@ Learn Loop is a multi-course learning management web app where Learners follow C
 - Let Learners progress through Lessons at their own pace without enforced locks.
 - Let Learners clearly see what they have started, completed, and should resume next.
 - Let Admins create and maintain Course, Chapter, and Lesson content without developer involvement.
-- Keep the MVP simple enough to ship with Phoenix LiveView and Postgres.
+- Keep the MVP simple enough to ship with Phoenix LiveView and SQLite.
 
 ## Non-goals for MVP
 
@@ -48,11 +48,12 @@ Admins can:
 - Create and edit Courses.
 - Create and edit Chapters within Courses.
 - Create and edit Lessons within Chapters.
-- Manually control Course, Chapter, and Lesson order.
+- Manage Course, Chapter, and Lesson content shown in creation order.
 - Publish valid Draft Courses.
 - Archive Published Courses.
+- Assign Admin access to Users.
 
-Admin access is assigned manually. A User can be a Learner, an Admin, or both.
+The first registered User automatically receives Admin access. Admins can assign Admin access to other Users from the User page. A User can be a Learner, an Admin, or both.
 
 ## Core concepts
 
@@ -153,7 +154,7 @@ Courses do not include categories, tags, difficulty levels, estimated durations,
 Admins can create ordered Chapters within a Course. A Chapter has:
 
 - Title.
-- Manual order within its Course.
+- Creation-time order within its Course.
 
 ### Lesson management
 
@@ -161,7 +162,7 @@ Admins can create ordered Lessons within a Chapter. A Lesson has:
 
 - Title.
 - Rich text body.
-- Manual order within its Chapter.
+- Creation-time order within its Chapter.
 
 ### Publishing rules
 
@@ -240,7 +241,7 @@ Useful constraints:
 - Elixir 1.18+
 - Phoenix 1.8+
 - Phoenix LiveView
-- Postgres
+- SQLite
 - open-props for CSS tokens
 - ExUnit and PhoenixTest for testing
 - Credo and Dialyxir as later quality checks
@@ -252,9 +253,10 @@ These decisions are fixed for the first release so implementation can proceed wi
 ### Authentication and roles
 
 - Use Phoenix's generated email/password authentication for public sign-up and sign-in.
-- Public sign-up always creates a User with Learner access and without Admin access.
-- Admin access is assigned manually outside the public UI for the MVP, through seed data, an IEx session, or a one-off operational task.
-- There is no in-app Admin role management screen in the MVP.
+- Public sign-up always creates a User with Learner access.
+- The first registered User automatically receives Admin access.
+- Admins can assign Admin access to other Users from the User page.
+- Public sign-up after the first registered User creates Learner access without Admin access.
 - A Learner can view and update only their own Enrollment and Progress records.
 - Admin access allows content management but does not automatically create Enrollments or Learner Progress.
 
@@ -265,10 +267,11 @@ These decisions are fixed for the first release so implementation can proceed wi
 - Rendered Lesson body HTML must be sanitized before display.
 - File uploads, embedded videos, custom components, and WYSIWYG editing are out of scope for the MVP.
 
-### Manual ordering
+### Content ordering
 
-- MVP ordering controls use simple up/down actions or numeric position fields.
+- Manual ordering controls are out of scope for the MVP.
 - Drag-and-drop ordering is out of scope for the MVP.
+- Course, Chapter, and Lesson lists are ordered by `created_at` for the MVP.
 - Course Order must be stable and scoped as follows:
   - Courses globally.
   - Chapters within a Course.
@@ -301,7 +304,7 @@ These decisions are fixed for the first release so implementation can proceed wi
 
 - Course, Chapter, and Lesson records keep timestamps.
 - Enrollment and Lesson Progress records keep timestamps.
-- Manual Admin assignment should be documented in deployment or seed instructions.
+- First-User Admin assignment and Admin-managed User promotion should be covered by automated tests.
 
 ## Implementation proof
 
@@ -309,8 +312,9 @@ The MVP is not complete until automated tests cover the core behavior described 
 
 Required test coverage:
 
-- Public sign-up creates Learner access but not Admin access.
+- Public sign-up creates Learner access, gives Admin access only to the first registered User, and does not give Admin access to later sign-ups.
 - Non-Admins cannot access Admin screens.
+- Admins can assign Admin access to another User from the User page.
 - Admins can create, edit, order, publish, and archive content according to lifecycle rules.
 - Invalid Draft Courses cannot be Published.
 - Draft and Archived Courses are hidden from Learners who are not enrolled.
@@ -335,6 +339,8 @@ mix test
 ### Learner
 
 - A visitor can sign up and become a Learner.
+- The first registered User automatically becomes an Admin.
+- Later registered Users do not automatically become Admins.
 - A Learner can see Continue Learning and Explore Courses.
 - A Learner can start a Published Course.
 - Starting a Course creates an Enrollment.
@@ -347,9 +353,10 @@ mix test
 
 ### Admin
 
-- A manually assigned Admin can access Admin screens.
+- An Admin can access Admin screens.
+- An Admin can assign Admin access to another User from the User page.
 - An Admin can create and edit Courses, Chapters, and Lessons.
-- An Admin can manually order Courses, Chapters, and Lessons.
+- Courses, Chapters, and Lessons are shown in `created_at` order.
 - A new Course starts as Draft.
 - A Draft Course is hidden from Learners.
 - An Admin can Publish only structurally valid Courses.
@@ -361,7 +368,5 @@ mix test
 
 These should be resolved before or during implementation planning:
 
-1. Should Lesson Markdown rendering allow raw HTML, or should raw HTML always be escaped before sanitization?
-2. What exact copy should empty states and validation messages use?
-3. Should Admin publish/archive actions require confirmation dialogs in the MVP?
-4. Should Progress percentage be rounded down, rounded to nearest whole number, or displayed with decimals?
+1. What exact copy should empty states and validation messages use?
+2. Should Markdown links get stricter handling, such as limiting URL schemes or adding external-link attributes?

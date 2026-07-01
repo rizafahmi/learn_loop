@@ -57,7 +57,7 @@ The signed-in learner's home view, split between continuing enrolled courses and
 _Avoid_: Home page, portal
 
 **Course Order**:
-The Admin-controlled sequence used to display courses, chapters, and lessons.
+The creation-time sequence used to display courses, chapters, and lessons in the MVP.
 _Avoid_: Sort order, position
 
 **Course Overview**:
@@ -70,9 +70,10 @@ _Avoid_: Course landing page, syllabus
 - A **Chapter** contains one or more ordered **Lessons**
 - A **User** can be a **Learner**, an **Admin**, or both
 - Public sign-up creates a **Learner**
-- **Admin** access is assigned manually
+- The first registered **User** automatically receives **Admin** access
+- **Admins** can assign **Admin** access to other **Users** from the User page
 - An **Admin** can create and edit **Courses**, **Chapters**, and **Lessons**
-- An **Admin** controls **Course Order** for Courses, Chapters, and Lessons
+- **Course Order** is based on `created_at` for Courses, Chapters, and Lessons in the MVP
 - A **Course** is a **Draft Course**, **Published Course**, or **Archived Course**
 - A **Published Course** must have at least one **Chapter**, and each **Chapter** must have at least one **Lesson**
 - Admin edits to a **Published Course** are visible to Learners immediately
@@ -99,4 +100,4 @@ _Avoid_: Course landing page, syllabus
 ## Flagged ambiguities
 
 - "user" can mean any account holder, but learning progress belongs to a **Learner**.
-- "admin managed" means **Admins** manage course content through basic web screens, not seed data or instructor-owned publishing.
+- "admin managed" means **Admins** manage course content and Admin assignment through basic web screens, not seed data or instructor-owned publishing.
