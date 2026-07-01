@@ -1,3 +1,5 @@
+This project uses a CLI ticket system called `tk` for task management. Run `tk help` or `./tk help` when you need to use it.
+
 This is a web application written using the Phoenix web framework.
 
 ## Project guidelines
